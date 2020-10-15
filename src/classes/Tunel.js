@@ -14,13 +14,15 @@ class Tunel {
         this.tunelGroup = new THREE.Group()
         this.sourceMesh
 
-        this.cloneSpace = 0.7
 
         this.tunelParams = {
             animSpeed: 1,
             zSpeed: .1,
             sinAmp: .5,
-            offset: 0.3
+            offset: 0.3,
+            cloneSpace: 0.7,
+            staggering: .5,
+            trigoMult: 1
         }
 
     }
@@ -33,19 +35,30 @@ class Tunel {
             console.log(glb)
             this.sourceMesh = glb.scene
 
-            for (let i = 0; i < 60; i++) {
+            for (let i = 0; i < 45; i++) {
                 let clone = this.sourceMesh.clone()
-                clone.position.z = -i * this.cloneSpace
-                clone.rotation.z = Math.random() * 0.5
                 this.tunelGroup.add(clone)
             }
+            this.clonePositioning()
+
+            MyGui.gui.add(this.tunelParams, "animSpeed", 0.0, 3.0).step(0.001)
+            MyGui.gui.add(this.tunelParams, "zSpeed", 0.0, .3)
+            MyGui.gui.add(this.tunelParams, "sinAmp", 0.0, 2)
+            MyGui.gui.add(this.tunelParams, "cloneSpace", 0.5, 2).onChange(this.clonePositioning)
+            MyGui.gui.add(this.tunelParams, "staggering", 0, 2).onChange(this.clonePositioning)
+            MyGui.gui.add(this.tunelParams, "trigoMult", 0, 10).step(1)
         })
 
         RAF.subscribe("tunelUpdate", this.update)
 
-        MyGui.gui.add(this.tunelParams, "animSpeed", 0.0, 3.0).step(0.001)
-        MyGui.gui.add(this.tunelParams, "zSpeed", 0.0, .3)
 
+    }
+
+    clonePositioning() {
+        this.tunelGroup.children.forEach((child, i) => {
+            child.position.z = -i * this.tunelParams.cloneSpace
+            child.rotation.z = Math.random() * this.tunelParams.staggering
+        });
 
     }
 
@@ -60,7 +73,7 @@ class Tunel {
 
             // let trigoOff = Date.now() * 0.002 * this.tunelParams.animSpeed + i * this.tunelParams.offset
 
-            let trigoOff = Math.PI * 2 * (i / this.tunelGroup.children.length) + Date.now() * 0.002 * this.tunelParams.animSpeed
+            let trigoOff = Math.PI * 2 * this.tunelParams.trigoMult * (i / this.tunelGroup.children.length) + Date.now() * 0.002 * this.tunelParams.animSpeed
 
             child.position.x = Math.cos(trigoOff) * this.tunelParams.sinAmp
             child.position.y = Math.sin(trigoOff) * this.tunelParams.sinAmp
@@ -68,7 +81,7 @@ class Tunel {
             child.position.z += this.tunelParams.zSpeed
 
             if (child.position.z >= 0) {
-                child.position.z = -this.tunelGroup.children.length * this.cloneSpace
+                child.position.z = -this.tunelGroup.children.length * this.tunelParams.cloneSpace
             }
 
         });
@@ -79,6 +92,7 @@ class Tunel {
     bind() {
         this.init = this.init.bind(this)
         this.update = this.update.bind(this)
+        this.clonePositioning = this.clonePositioning.bind(this)
     }
 
 

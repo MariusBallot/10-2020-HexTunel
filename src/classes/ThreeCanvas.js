@@ -55,12 +55,6 @@ class ThreeScene {
     this.controls.maxDistance = 1500
     this.controls.minDistance = 0
 
-
-    this.composer = new EffectComposer(this.renderer);
-    this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 3, 1, 0.9);
-    this.composer.addPass(this.bloomPass);
-
     let light = new THREE.AmbientLight()
     let pointLight = new THREE.PointLight()
     pointLight.position.set(10, 10, 0)
@@ -73,7 +67,7 @@ class ThreeScene {
 
 
   update() {
-    // this.composer.render();
+    this.controls.update()
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -91,28 +85,6 @@ class ThreeScene {
 
     window.addEventListener("resize", this.resizeCanvas)
     RAF.subscribe('threeSceneUpdate', this.update)
-  }
-  myGUI() {
-
-    var params = {
-      exposure: 1,
-      bloomStrength: 1.5,
-      bloomThreshold: 0,
-      bloomRadius: 0
-    };
-    this.myGui = new GUI();
-
-    this.myGui.add(params, "bloomThreshold", 0.0, 1.0).onChange(value => {
-      this.bloomPass.threshold = Number(value);
-    });
-
-    this.myGui.add(params, "bloomStrength", 0.0, 3.0).onChange(value => {
-      this.bloomPass.strength = Number(value);
-    });
-
-    this.myGui.add(params, "bloomRadius", 0.0, 1.0).step(0.01).onChange(value => {
-      this.bloomPass.radius = Number(value);
-    });
   }
 }
 
